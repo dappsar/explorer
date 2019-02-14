@@ -17,5 +17,8 @@ export default {
         '1': liveContract.abi,
         '3': ropstenContract.abi,
         '38611': quorumContract.abi
+    },
+    explorers: {
+        '38611': 'http://localhost:20104'
     }
 }

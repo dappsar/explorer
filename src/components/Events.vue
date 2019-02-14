@@ -64,15 +64,6 @@ function handleNewContract(contract) {
     }).catch(error => {
         console.log('Error from contract.getPastEvents:', error);
     });
-
-    // future events (does not seem to work with MetaMask!)
-    contract.events.allEvents({
-        fromBlock: 0,
-        toBlock: 'latest'
-    }).on('data', event => {
-        this.events = this.events.push(event);
-        console.log('New event:', event)
-    });
 }
 </script>
 

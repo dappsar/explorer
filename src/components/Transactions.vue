@@ -39,6 +39,7 @@
 
 <script>
 import sharedState from '../state.js';
+import config from '../config.js';
 
 export default {
     data() {
@@ -56,68 +57,37 @@ function handleNewTxHash(newtxhash) {
     // often a copy-and-paste contains extra trailing characters, so
     // help the user
     const txhash = newtxhash.slice(0, 66);
-    this.web3js.eth.getTransaction(txhash).then(tx => {        
-        const data = tx.input.toString();
-        tx.functionHash = data.slice(0,10);
-        tx.functionName = `(hash ${tx.functionHash}...)`;
-        if (parameters[tx.functionHash]) {
-            tx.functionName = parameters[tx.functionHash][0];
-        }
-        tx.data = '0x' + data.slice(10);
-        tx.params = {};
-        
-        for(var i=10, p=1; i<data.length; i+=64, p++) {
-            var pname = '' + p;
-            if (parameters[tx.functionHash]) {
-                pname = parameters[tx.functionHash][p];
-                tx.params[pname] = parameterFormat[pname](
-                    parseInt(data.slice(i,i+64), 16),
-                    data.slice(i,i+64)
-                );
-            } else {
-                tx.params[pname] = parseInt(data.slice(i,i+64), 16);
-            }
-        }
+    this.web3js.eth.getTransaction(txhash).then(async tx => {
+        const explorer = config.explorers[this.networkId];
+        const { input } = await (await fetch(`${explorer}/txnrcpt/${txhash}`)).json();
+        tx.input = input;
+        const abi = config.contractABIs[this.networkId]
+            .filter(o => o.type === 'function')
+            .map(o => {
+              o.signature = this.web3js.eth.abi.encodeFunctionSignature(o);
+              return o;
+            })
+            .filter(o => tx.input.startsWith(o.signature))[0];
+        if(!abi) return alert('Transaction can\'t be decoded');
+
+        tx.functionName = abi.name || tx.input.slice(0, 10);
+        tx.data = '0x' + tx.input.slice(10);
+        const decoded = this.web3js.eth.abi.decodeParameters(abi.inputs, tx.data);
+        delete decoded.__length__;
+        tx.params = Object.keys(decoded)
+            .filter(key => !/^\d+$/.test(key))
+            .reduce((obj, key) => {
+                obj[key] = parameterFormat[key](decoded[key]);
+                return obj;
+            }, {});
 
         this.contract.methods.producers(tx.from).call().then(result => {
             tx.fromIsRegisteredProducer = result;
-        }).then(() => {        
+        }).then(() => {
             this.transactions.push(tx);
             this.txhash = '';
         });
     });
-}
-
-const parameters = {
-    '0x3c530ace': {
-        0: 'registerProducer',
-        1: 'aproducer'
-    },
-    '0x520e7b0e': {
-        0: 'offer_energy',
-        1: 'aday',
-        2: 'aprice',
-        3: 'aenergy',
-        4: 'atimestamp'
-    },
-    '0x6dd8d3bf': [
-        'buy_energy',
-        'aproducer',
-        'aday',
-        'aprice',
-        'aenergy',
-        'auserID',
-        'atimestamp'
-    ],
-    '0x4bdb8509': [
-        '(old) buy_energy',
-        'aproducer',
-        'aday',
-        'aprice',
-        'aenergy',
-        'auserID',
-        'atimestamp'        
-    ]
 }
 
 const parameterFormat = {
@@ -135,9 +105,8 @@ const parameterFormat = {
         return `${new Date(atimestamp / 1.0e3).toLocaleString()} (${((Date.now() / 1.0e3) - (atimestamp / 1.0e6)).toFixed(0)} s ago)` ;
     },
     'auserID': auserID => 'User with ID ' + auserID,
-    'aproducer': (i, aproducer) => '0x'+aproducer.slice(-40)
-}
-
+    'aproducer': (aproducer) => aproducer
+};
 </script>
 
 <style scoped>

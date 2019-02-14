@@ -5,7 +5,7 @@
         <div class="container-fluid">
             <div class="navbar-header">
                 <a class="navbar-brand" href="https://lition.de">
-                    <img class="logo" src="https://www.lition.de/wp-content/uploads/2018/03/lition-logo-secondary-white@3x.png">
+                    <img class="logo" src="https://www.lition.io/wp-content/uploads/2018/03/lition-logo-secondary-white@3x.png">
                 </a>
             </div>
             <div class="navbar-header navbar-right">
@@ -19,7 +19,7 @@
     <div class="container-fluid header">
         <div class="row no_overflow">
             <div class="col-md-6 col-md-push-6">
-                <img class="headerimage" src="https://www.lition.de/wp-content/uploads/2018/03/180327-den-stage-illusration@3x.png">
+                <img class="headerimage" src="https://www.lition.io/wp-content/uploads/2018/03/180327-den-stage-illusration@3x.png">
             </div>
             <div class="col-md-6 col-md-pull-6">
                 <div class="container-fluid title-container">
