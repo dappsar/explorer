@@ -3,7 +3,7 @@
     <div class="container-fluid section-title">
         <h1>Transactions</h1>
         <br>
-        <p>Transactions cannot be autopopulated. Copy and paste a TxHash here to view its details:
+        <p>Copy and paste a TxHash here to view its details:
         <input id="txhash" v-model="txhash" size="70"></p>
     </div>
     <div class="container-fluid scrollable">
@@ -29,6 +29,9 @@
                     <tr v-for="(param, key) in tx.params" :key="key">
                         <td>{{ key }}</td><td>{{ param }}</td>
                     </tr>
+                    <tr>
+                      <td>Actions:</td><td><button v-on:click="deleteData(tx.hash)">Delete data</button></td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -47,6 +50,18 @@ export default {
     },
     watch: {
         txhash: handleNewTxHash
+    },
+    methods: {
+        deleteData: function deleteData(hash) {
+            fetch(`${config.explorers[this.networkId]}/getNodeList`)
+                .then(r => r.json())
+                .then(nodes => {
+                    Promise.all(nodes.map(n => fetch(`http://${n.ip}:22004/rmpld/${hash}`))).finally(() => {
+                        $('.alert-info > .message').text('Data is deleted');
+                        $('.alert-info').show();
+                    });
+                });
+        }
     }
 }
 
@@ -68,7 +83,11 @@ function handleNewTxHash(newtxhash) {
               return o;
             })
             .filter(o => tx.input.startsWith(o.signature))[0];
-        if(!abi) return alert('Transaction can\'t be decoded');
+        if (!abi) {
+            $('.alert-warning > .message').text('Transaction found, but data is deleted');
+            $('.alert-warning').show();
+            return;
+        }
 
         tx.functionName = abi.name || tx.input.slice(0, 10);
         tx.data = '0x' + tx.input.slice(10);
@@ -87,6 +106,10 @@ function handleNewTxHash(newtxhash) {
             this.transactions.push(tx);
             this.txhash = '';
         });
+    }).catch(e => {
+        console.log(e);
+        $('.alert-danger > .message').text('Transaction not found');
+        $('.alert-danger').show();
     });
 }
 
@@ -102,10 +125,12 @@ const parameterFormat = {
             + new Date(atimestamp / 1.0e3).toDateString()+'?';
     },
     'atimestamp': atimestamp => {
+        if (atimestamp === '0') atimestamp = Date.now() * 1.0e3;
         return `${new Date(atimestamp / 1.0e3).toLocaleString()} (${((Date.now() / 1.0e3) - (atimestamp / 1.0e6)).toFixed(0)} s ago)` ;
     },
     'auserID': auserID => 'User with ID ' + auserID,
-    'aproducer': (aproducer) => aproducer
+    'aproducer': aproducer => aproducer,
+    'aconsumer': aconsumer => aconsumer,
 };
 </script>
 
@@ -118,7 +143,7 @@ div.box {
     text-align: left;
     margin: 5em;
     padding: 1em;
-    
+
 }
 div.scrollable{
     overflow-x: scroll;

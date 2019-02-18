@@ -9,10 +9,23 @@
                 </a>
             </div>
             <div class="navbar-header navbar-right">
-                <a class="navbar-brand" href="https://quantum-factory.de">
-                    <img class="logo2" src="https://quantum-factory.de/img/qf.svg">
-                </a>
+
             </div>
+        </div>
+
+        <div class="alert alert-warning alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <div class="message">warning</div>
+        </div>
+
+        <div class="alert alert-info alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <div class="message">info</div>
+        </div>
+
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <div class="message">danger</div>
         </div>
     </nav>
 
@@ -101,6 +114,9 @@ export default {
     watch: {
         address: energyStoreState.handleNewAddress,
         contract: energyStoreState.handleNewContract
+    },
+    mounted: function () {
+        this.txhash = window.location.search.replace('?tx/', '');
     }
 };
 
@@ -124,8 +140,17 @@ $(".btn-pref .btn").click(function () {
 
 
 
+nav.navbar > .alert {
+    display: none;
+    margin-bottom: 0;
+}
+
+nav.navbar > .container-fluid {
+    min-height: 100px;
+}
+
 nav.navbar {
-    height: 100px;
+    min-height: 100px;
     background-color: rgba(5, 26, 46, 0.9);
 }
 

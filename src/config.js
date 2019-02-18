@@ -11,14 +11,14 @@ export default {
         '3': '0xa705D64d383349F5c198afed7C3292d24EaBa48d',
 
         // quorum
-        '38611': '0xf99aead997b16002af642476f104117b0711f279',
+        '87828': '0xf336725f57e7e8d9352accca07bf390c03e906a1',
     },
     contractABIs: {
         '1': liveContract.abi,
         '3': ropstenContract.abi,
-        '38611': quorumContract.abi
+        '87828': quorumContract.abi
     },
     explorers: {
-        '38611': 'http://localhost:20104'
+        '87828': 'http://139.59.211.111:22004'
     }
 }
