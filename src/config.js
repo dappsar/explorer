@@ -1,6 +1,6 @@
 import liveContract from './live20180513.js'
 import ropstenContract from './ropsten20180504.js'
-import quorumContract from './quorum20190211.js'
+import litionContract from './lition20190211.js'
 
 export default {
     contractAddresses: {
@@ -10,15 +10,15 @@ export default {
         // ropsten
         '3': '0xa705D64d383349F5c198afed7C3292d24EaBa48d',
 
-        // quorum
-        '87828': '0xf336725f57e7e8d9352accca07bf390c03e906a1',
+        // lition
+        '54084': '0x81c7ace3829bd2bd4ce74bbd3c341bd2285f2c30',
     },
     contractABIs: {
         '1': liveContract.abi,
         '3': ropstenContract.abi,
-        '87828': quorumContract.abi
+        '54084': litionContract.abi
     },
     explorers: {
-        '87828': 'http://139.59.211.111:22004'
+        '54084': 'http://40.113.129.13:22004'
     }
 }

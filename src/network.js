@@ -6,8 +6,8 @@ const networks = {
     '3': 'Ropsten testnet',
     '4': 'Rinkeby testnet',
     '42': 'Kovan testnet',
-    '87828': 'Lition'
-}
+    '54084': 'Lition'
+};
 
 function name(id) {
     if (networks[id]) {
