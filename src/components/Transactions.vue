@@ -53,14 +53,11 @@ export default {
     },
     methods: {
         deleteData: function deleteData(hash) {
-            fetch(`${config.explorers[this.networkId]}/getNodeList`)
-                .then(r => r.json())
-                .then(nodes => {
-                    Promise.all(nodes.map(n => fetch(`http://${n.ip}:22004/rmpld/${hash}`))).finally(() => {
-                        $('.alert-info > .message').text('Data is deleted');
-                        $('.alert-info').show();
-                    });
-                });
+            // todo: remove from other nodes
+            fetch(`${config.explorers[this.networkId]}/rmpld/${hash}`).finally(() => {
+                $('.alert-info > .message').text('Data is deleted');
+                $('.alert-info').show();
+            });
         }
     }
 }

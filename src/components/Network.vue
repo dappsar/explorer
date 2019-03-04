@@ -36,7 +36,7 @@ function handleWeb3(self, web3js)  {
             self.networkId = id;
             const name = network.name(id);
             self.networkName = name;
-            setTimeout(updateUI, 100);
+            // setTimeout(updateUI, 100);
         });
     };
     updateUI();

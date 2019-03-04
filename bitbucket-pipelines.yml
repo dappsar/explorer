@@ -8,7 +8,22 @@ pipelines:
           deployment: production
           script:
             - npm ci
-            - npm run build
+            - NODE_ENV=production npm run build
+            - docker login bc1.lition.io:5000 -u $DOCKER_USER -p $DOCKER_PASSWORD
+            - docker build -t prod-smart-contract-viewer .
+            - docker tag prod-smart-contract-viewer bc1.lition.io:5000/prod-smart-contract-viewer
+            - docker push bc1.lition.io:5000/prod-smart-contract-viewer
+            - ssh lition@bc1.lition.io "docker pull bc1.lition.io:5000/prod-smart-contract-viewer"
+            - ssh lition@bc1.lition.io "docker stop prod-smart-contract-viewer || true"
+            - ssh lition@bc1.lition.io "docker rm prod-smart-contract-viewer || true"
+            - ssh lition@bc1.lition.io "docker run --network nginx --network-alias prod-smart-contract-viewer --name prod-smart-contract-viewer -d bc1.lition.io:5000/prod-smart-contract-viewer"
+    staging:
+      - step:
+          name: Deploy
+          deployment: staging
+          script:
+            - npm ci
+            - NODE_ENV=staging npm run build
             - docker login bc1.lition.io:5000 -u $DOCKER_USER -p $DOCKER_PASSWORD
             - docker build -t smart-contract-viewer .
             - docker tag smart-contract-viewer bc1.lition.io:5000/smart-contract-viewer

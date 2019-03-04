@@ -73,7 +73,7 @@ function handlePolling(self) {
                 handleNextBid(self, self.asks.length, 0);
             }
         });
-        pollingTimeoutId = setTimeout(handler, 1000);        
+        pollingTimeoutId = setTimeout(handler, 60 * 1000);
     }
     handler();
 }
