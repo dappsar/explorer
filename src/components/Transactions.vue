@@ -73,9 +73,7 @@ function handleNewTxHash(newtxhash) {
     // help the user
     const txhash = newtxhash.slice(0, 66);
     this.web3js.eth.getTransaction(txhash).then(async tx => {
-        const explorer = config.explorers[this.networkId];
-        const { input } = await (await fetch(`${explorer}/txnrcpt/${txhash}`)).json();
-        tx.input = input;
+        tx.input = await this.web3js.eth.getQuorumPayload(tx.input);
         const abi = config.contractABIs[this.networkId]
             .filter(o => o.type === 'function')
             .map(o => {
