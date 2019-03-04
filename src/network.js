@@ -6,7 +6,8 @@ const networks = {
     '3': 'Ropsten testnet',
     '4': 'Rinkeby testnet',
     '42': 'Kovan testnet',
-    '54084': 'Lition'
+    '54084': 'Lition',
+    '78377': 'Lition Prod',
 };
 
 function name(id) {
