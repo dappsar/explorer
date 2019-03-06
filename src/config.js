@@ -12,8 +12,8 @@ export default {
         '3': '0xa705D64d383349F5c198afed7C3292d24EaBa48d',
 
         // lition
-        '54084': '0x81c7ace3829bd2bd4ce74bbd3c341bd2285f2c30',
-        '78377': '0x914b3b49c095d53f9e4a26ad9a9ac93f55882a83',
+        '54084': '0x3fc73b0739c8a9c883718650d2a99177769e4489',
+        '78377': '0x0b6df7abf70eb3df9ff063d3ee69dd5e0a52db3a',
     },
     contractABIs: {
         '1': liveContract.abi,
