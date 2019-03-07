@@ -1,3 +1,3 @@
 module.exports = {
-  baseUrl: process.env.NODE_ENV === 'production' ? '/partner/prod-lition' : '/partner/lition'
+  baseUrl: process.env.BASE_URL
 };
