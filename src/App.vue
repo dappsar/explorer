@@ -36,7 +36,7 @@
             </div>
             <div class="col-md-6 col-md-pull-6">
                 <div class="container-fluid title-container">
-                    <h1> <strong>Lition Smart Contract Viewer and Debugger </strong></h1>
+                    <h1> <strong>Lition Block Explorer for Energy Case</strong></h1>
                     <br>
                     <Metamask/>
                     <Network/>
