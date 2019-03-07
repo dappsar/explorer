@@ -8,7 +8,7 @@ pipelines:
           deployment: production
           script:
             - npm ci
-            - BASE_URL=/partner/prod-lition npm run build
+            - VUE_APP_PROVIDER=http://127.0.0.1:32000 BASE_URL=/partner/prod-lition npm run build
             - docker login bc1.lition.io:5000 -u $DOCKER_USER -p $DOCKER_PASSWORD
             - docker build -t prod-smart-contract-viewer .
             - docker tag prod-smart-contract-viewer bc1.lition.io:5000/prod-smart-contract-viewer
@@ -23,7 +23,7 @@ pipelines:
           deployment: staging
           script:
             - npm ci
-            - BASE_URL=/partner/lition npm run build
+            - VUE_APP_PROVIDER=http://40.113.129.13:22000 BASE_URL=/partner/lition npm run build
             - docker login bc1.lition.io:5000 -u $DOCKER_USER -p $DOCKER_PASSWORD
             - docker build -t smart-contract-viewer .
             - docker tag smart-contract-viewer bc1.lition.io:5000/smart-contract-viewer

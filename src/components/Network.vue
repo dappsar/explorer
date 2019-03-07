@@ -2,9 +2,6 @@
 <div class="network">
   <h4>
     You are on the <em>{{ networkName }}</em> network.
-    <span v-if="!noMetaMaskWarning">
-      You can change that in the MetaMask extension.
-    </span>
   </h4>
 </div>
 </template>
