@@ -12,7 +12,7 @@
       return sharedState;
     },
     created() {
-      this.web3js = new Web3(process.env.VUE_APP_PROVIDER);
+      this.web3js = new Web3(process.env.VUE_APP_PROVIDER || 'http://127.0.0.1:20100');
       this.web3js.extend({
         property: 'eth',
         methods: [new this.web3js.extend.Method({

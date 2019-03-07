@@ -3,9 +3,6 @@
   Contract address:<br>
   <input id="contract-address" v-model="address" size="50">
   <br><br>
-  <a v-if="!addressError" :href="linkToExplorer(address)" class="btn btn-success btn-lg" role="button" target="_blank">
-      View in Explorer
-  </a>
   <span id="contract-address-error" v-if="!!addressError">
     {{ addressError }}
     <a href="#" v-if="!!defaultAddress" v-on:click="address=defaultAddress">Reset</a>
@@ -34,18 +31,6 @@ export default {
         web3: function(web3js, oldweb3js) {
             if (!oldweb3js) {
                 updateContract.bind(this)(web3js, this.address);
-            }
-        }
-    },
-    methods: {
-        linkToExplorer: function linkToExplorer(address) {
-            switch (this.networkId) {
-            case 1:
-                return `https://etherscan.io/address/${address}`;
-            case 3:
-                return `https://ropsten.etherscan.io/address/${address}`;
-            default:
-                return `${config.explorers[this.networkId]}`;
             }
         }
     }

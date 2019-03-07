@@ -30,7 +30,14 @@
                         <td>{{ key }}</td><td>{{ param }}</td>
                     </tr>
                     <tr>
-                      <td>Actions:</td><td><button v-on:click="deleteData(tx.hash)">Delete data</button></td>
+                        <td>Actions:</td>
+                        <td>
+                            <a :href="linkToExplorer(tx.hash)" class="btn btn-success btn-lg" role="button" target="_blank">
+                                View raw transaction
+                            </a>
+                            &nbsp;
+                            <button v-on:click="deleteData(tx.hash)" class="btn btn-success btn-lg">Delete data</button>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -52,12 +59,23 @@ export default {
         txhash: handleNewTxHash
     },
     methods: {
+        linkToExplorer: function linkToExplorer(hash) {
+            switch (this.networkId) {
+            case 1:
+            case 3:
+                return `${config.explorers[this.networkId]}/tx/${hash}`;
+            default:
+                return `${config.explorers[this.networkId]}/txnrcpt/${hash}`;
+            }
+        },
         deleteData: function deleteData(hash) {
-            // todo: remove from other nodes
-            fetch(`${config.explorers[this.networkId]}/rmpld/${hash}`).finally(() => {
-                $('.alert-info > .message').text('Data is deleted');
-                $('.alert-info').show();
-            });
+            if (confirm('Are you sure?')) {
+                // todo: remove from other nodes
+                fetch(`${config.explorers[this.networkId]}/rmpld/${hash}`).finally(() => {
+                    $('.alert-info > .message').text('Data is deleted');
+                    $('.alert-info').show();
+                });
+            }
         }
     }
 }

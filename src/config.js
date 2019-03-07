@@ -22,6 +22,8 @@ export default {
         '78377': litionProdContract.abi,
     },
     explorers: {
+        '1': 'https://etherscan.io',
+        '3': 'https://ropsten.etherscan.io',
         '54084': 'http://40.113.129.13:22004',
         '78377': 'http://127.0.0.1:32004',
     }
