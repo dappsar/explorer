@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "VUE_APP_PROVIDER=http://40.113.129.13:22000 vue-cli-service serve",
+    "serve": "VUE_APP_NETWORK=54084 vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
