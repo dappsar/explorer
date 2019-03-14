@@ -1,28 +1,557 @@
-import liveContract from './live20180513.js'
-import ropstenContract from './ropsten20180504.js'
-import litionContract from './lition20190211.js'
-import litionProdContract from './lition20190304.js'
+const abi = [
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "asks",
+    "outputs": [
+      {
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "name": "day",
+        "type": "uint32"
+      },
+      {
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "name": "energy",
+        "type": "uint64"
+      },
+      {
+        "name": "userID",
+        "type": "uint32"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint64"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "consumers",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "producers",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "aproducer",
+        "type": "address"
+      }
+    ],
+    "name": "registerProducer",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "bids",
+    "outputs": [
+      {
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "name": "day",
+        "type": "uint32"
+      },
+      {
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "name": "energy",
+        "type": "uint64"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint64"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "aproducer",
+        "type": "address"
+      }
+    ],
+    "name": "deregisterProducer",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "name": "asksIndex",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "aconsumer",
+        "type": "address"
+      },
+      {
+        "name": "auserID",
+        "type": "uint32"
+      }
+    ],
+    "name": "registerConsumer",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      },
+      {
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "name": "bidsIndex",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "day",
+        "type": "uint32"
+      },
+      {
+        "indexed": true,
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "name": "energy",
+        "type": "uint64"
+      }
+    ],
+    "name": "BidMade",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "day",
+        "type": "uint32"
+      },
+      {
+        "indexed": true,
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "name": "energy",
+        "type": "uint64"
+      }
+    ],
+    "name": "BidRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "day",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "name": "energy",
+        "type": "uint64"
+      },
+      {
+        "indexed": true,
+        "name": "userID",
+        "type": "uint32"
+      }
+    ],
+    "name": "Deal",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "day",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "name": "energy",
+        "type": "uint64"
+      },
+      {
+        "indexed": true,
+        "name": "userID",
+        "type": "uint32"
+      }
+    ],
+    "name": "DealRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "producer",
+        "type": "address"
+      }
+    ],
+    "name": "producerRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "producer",
+        "type": "address"
+      }
+    ],
+    "name": "producerDeregistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "consumer",
+        "type": "address"
+      }
+    ],
+    "name": "consumerRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "consumer",
+        "type": "address"
+      }
+    ],
+    "name": "consumerDeregistered",
+    "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "aday",
+        "type": "uint32"
+      },
+      {
+        "name": "aprice",
+        "type": "uint32"
+      },
+      {
+        "name": "aenergy",
+        "type": "uint64"
+      },
+      {
+        "name": "atimestamp",
+        "type": "uint64"
+      }
+    ],
+    "name": "offer_energy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getBidsCount",
+    "outputs": [
+      {
+        "name": "count",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "name": "day",
+        "type": "uint32"
+      }
+    ],
+    "name": "getBidByProducerAndDay",
+    "outputs": [
+      {
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "name": "energy",
+        "type": "uint64"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "aproducer",
+        "type": "address"
+      },
+      {
+        "name": "aday",
+        "type": "uint32"
+      },
+      {
+        "name": "aprice",
+        "type": "uint32"
+      },
+      {
+        "name": "aenergy",
+        "type": "uint64"
+      },
+      {
+        "name": "auserID",
+        "type": "uint32"
+      },
+      {
+        "name": "atimestamp",
+        "type": "uint64"
+      }
+    ],
+    "name": "buy_energy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "aproducer",
+        "type": "address"
+      },
+      {
+        "name": "aday",
+        "type": "uint32"
+      },
+      {
+        "name": "aprice",
+        "type": "uint32"
+      },
+      {
+        "name": "aenergy",
+        "type": "uint64"
+      }
+    ],
+    "name": "buy_energy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getAsksCount",
+    "outputs": [
+      {
+        "name": "count",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "userID",
+        "type": "uint32"
+      }
+    ],
+    "name": "getAskByUserID",
+    "outputs": [
+      {
+        "name": "producer",
+        "type": "address"
+      },
+      {
+        "name": "day",
+        "type": "uint32"
+      },
+      {
+        "name": "price",
+        "type": "uint32"
+      },
+      {
+        "name": "energy",
+        "type": "uint64"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 
 export default {
-    contractAddresses: {
-        // live
-        '1': '0x3f3c80ceA2d44419fBDA23Be3575fd403c5b4481',
-
-        // ropsten
-        '3': '0xa705D64d383349F5c198afed7C3292d24EaBa48d',
-
-        // lition
-        '54084': '0x3fc73b0739c8a9c883718650d2a99177769e4489',
-        '78377': '0x0b6df7abf70eb3df9ff063d3ee69dd5e0a52db3a',
-    },
-    contractABIs: {
-        '1': liveContract.abi,
-        '3': ropstenContract.abi,
-        '54084': litionContract.abi,
-        '78377': litionProdContract.abi,
-    },
-    explorers: {
-        '54084': 'http://40.113.129.13:22004',
-        '78377': 'http://40.113.129.13:32004',
-    }
-}
+  '54084': {
+    name: 'Lition Testnet',
+    address: '0x3fc73b0739c8a9c883718650d2a99177769e4489',
+    explorer: 'http://40.113.129.13:22004',
+    rpc: 'http://40.113.129.13:22000',
+    abi,
+  },
+  '78377': {
+    name: 'Lition Prod',
+    address: '0x0b6df7abf70eb3df9ff063d3ee69dd5e0a52db3a',
+    explorer: 'http://40.113.129.13:32004',
+    rpc: 'http://40.113.129.13:32000',
+    abi,
+  },
+};
