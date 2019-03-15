@@ -1,10 +1,10 @@
-Lition Smart Contract Viewer and Debugger
-=========================================
+Lition Block Explorer for Energy Case
+=====================================
 
 Development environment
 -----------------------
 
-update `src/config.js`
+start your own node and update `src/config.js`
 
 `npm i`
 
