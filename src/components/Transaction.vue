@@ -135,6 +135,11 @@
     methods: {
       getTransaction: function getTransaction(id) {
         this.$parent.web3js.eth.getTransaction(id).then(async transaction => {
+          if(!transaction) {
+            $('.alert-danger > .message').text('Transaction not found');
+            $('.alert-danger').show();
+            return;
+          }
           transaction.input = await this.$parent.web3js.eth.getQuorumPayload(transaction.input);
           this.transaction = transaction;
           if (this.transaction.input === '0x') {

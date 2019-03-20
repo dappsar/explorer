@@ -8,7 +8,11 @@
             <img class="logo" src="https://www.lition.io/wp-content/uploads/2018/03/lition-logo-secondary-white@3x.png">
           </router-link>
         </div>
-        <div class="navbar-header navbar-right"></div>
+        <form class="navbar-right" v-on:submit.prevent="search()">
+          <input type="text" class="form-control" v-model="input" placeholder="transaction, address">
+          &nbsp;
+          <button type="submit" class="btn btn-default">go</button>
+        </form>
       </div>
 
       <div class="alert alert-warning alert-dismissible" role="alert">
@@ -65,6 +69,7 @@
         networkName: '(to be determined)',
         web3js: false,
         config: {},
+        input: '',
       };
     },
     mounted() {
@@ -88,7 +93,19 @@
           return numberToBN(v).toString();
         }
       };
-    }
+    },
+    methods: {
+      search: function search() {
+        switch (this.input.length) {
+        case 66:
+          this.$router.push(`/tx/${this.input}`);
+          break;
+        case 42:
+          this.$router.push(`/address/${this.input}`);
+          break;
+        }
+      }
+    },
   };
 </script>
 
@@ -108,7 +125,13 @@
   }
 
   nav.navbar > .container-fluid {
-    min-height: 100px;
+    height: 100px;
+  }
+
+  nav.navbar form {
+    height: 100%;
+    display: flex;
+    align-items: center;
   }
 
   nav.navbar {
@@ -192,11 +215,25 @@
     word-break: break-all;
   }
 
-  .margin-bottom-xs { margin-bottom: .25em; }
-  .margin-bottom-sm { margin-bottom: .5em; }
-  .margin-bottom-md { margin-bottom: 1em; }
-  .margin-bottom-lg { margin-bottom: 1.5em; }
-  .margin-bottom-xl { margin-bottom: 3em; }
+  .margin-bottom-xs {
+    margin-bottom: .25em;
+  }
+
+  .margin-bottom-sm {
+    margin-bottom: .5em;
+  }
+
+  .margin-bottom-md {
+    margin-bottom: 1em;
+  }
+
+  .margin-bottom-lg {
+    margin-bottom: 1.5em;
+  }
+
+  .margin-bottom-xl {
+    margin-bottom: 3em;
+  }
 
   @media only screen and (max-width: 992px) {
 
@@ -216,6 +253,10 @@
   @media only screen and (max-width: 770px) {
     img.logo2 {
       visibility: hidden;
+    }
+
+    nav.navbar > .container-fluid {
+      height: 150px;
     }
   }
 

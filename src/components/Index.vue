@@ -1,5 +1,6 @@
 <template>
   <div id="index-container">
+    <h3>Nodes Online: {{ peers + 1 }}</h3>
     <div class="section-title">
       <h3>Blocks</h3>
       <div id="blocks-standin" v-if="!blocks">
@@ -69,16 +70,22 @@
     name: 'Index',
     data() {
       return {
+        peers: 0,
         blocks: [],
         transactions: [],
       };
     },
     beforeRouteEnter (to, from, next) {
       next(vm => {
+        vm.getPeers();
         vm.getBlocks();
       })
     },
     methods: {
+      getPeers: function getPeers() {
+        this.$parent.web3js.eth.net.getPeerCount()
+          .then(count => this.peers = count);
+      },
       getBlocks: async function getBlocks() {
         const blockNumber = await this.$parent.web3js.eth.getBlockNumber();
         for (let i = 0; i < 10; i++) {
