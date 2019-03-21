@@ -168,7 +168,7 @@
     border-radius: 50%;
     width: 10000px;
     height: 10000px;
-    background: white;
+    background: black;
 
     margin-left: -4000px;
     margin-top: 200px;
