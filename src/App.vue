@@ -4,47 +4,47 @@
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand" href="https://lition.de">
+          <router-link class="navbar-brand" to="/">
             <img class="logo" src="https://www.lition.io/wp-content/uploads/2018/03/lition-logo-secondary-white@3x.png">
-          </a>
+          </router-link>
         </div>
-        <div class="navbar-header navbar-right">
-
-        </div>
+        <form class="navbar-right" v-on:submit.prevent="search()">
+          <input type="text" class="form-control" v-model="input" placeholder="transaction, address">
+          &nbsp;
+          <button type="submit" class="btn btn-default">go</button>
+        </form>
       </div>
 
       <div class="alert alert-warning alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-          aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
         <div class="message">warning</div>
       </div>
 
       <div class="alert alert-info alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-          aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
         <div class="message">info</div>
       </div>
 
       <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-          aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
         <div class="message">danger</div>
       </div>
     </nav>
 
     <div class="container-fluid header">
-      <div class="row no_overflow">
-        <div class="col-md-6 col-md-push-6">
-          <img class="headerimage"
-               src="https://www.lition.io/wp-content/uploads/2018/03/180327-den-stage-illusration@3x.png">
-        </div>
-        <div class="col-md-6 col-md-pull-6">
+      <div class="row no_overflow headerimage">
+        <div class="col-md-12">
           <div class="container-fluid title-container">
             <h1><strong>Lition Block Explorer for Energy Case</strong></h1>
             <br>
-            <Network/>
             <div class="container-fluid text-left contact-container">
-              <Contract/>
+              <router-view></router-view>
             </div>
           </div>
         </div>
@@ -53,82 +53,60 @@
         </div>
       </div>
     </div>
-
-    <Transactions/>
-
-    <div class="btn-pref btn-group btn-group-justified btn-group-lg" role="group" aria-label="...">
-      <div class="btn-group" role="group">
-        <button type="button" id="stars" class="btn btn-primary" href="#events" data-toggle="tab">
-          <h4>Events</h4>
-        </button>
-      </div>
-      <div class="btn-group" role="group">
-        <button type="button" id="favorites" class="btn btn-default" href="#bids" data-toggle="tab">
-          <h4>Bids</h4>
-        </button>
-      </div>
-      <div class="btn-group" role="group">
-        <button type="button" id="following" class="btn btn-default" href="#asks" data-toggle="tab">
-          <h4>Asks</h4>
-        </button>
-      </div>
-    </div>
-
-    <div class="tab-content">
-      <div id="events" class="tab-pane fade in active">
-        <Events/>
-      </div>
-      <div id="bids" class="tab-pane fade">
-        <Bids/>
-      </div>
-      <div id="asks" class="tab-pane fade">
-        <Asks/>
-      </div>
-    </div>
-
-
   </div>
 </template>
 
 <script>
-  import Network from "./components/Network.vue";
-  import Contract from "./components/Contract.vue";
-  import Transactions from "./components/Transactions.vue";
-  import Events from "./components/Events.vue";
-  import Bids from "./components/Bids.vue";
-  import Asks from "./components/Asks.vue";
-  import sharedState from './state.js'
-  import energyStoreState from './EnergyStoreState.js'
+  import config from './config.js'
+  import Web3 from 'web3'
+  import numberToBN from 'number-to-bn'
 
   export default {
     name: "app",
-    components: {
-      Network,
-      Contract,
-      Transactions,
-      Events,
-      Bids,
-      Asks
-    },
     data() {
-      return sharedState;
+      return {
+        networkId: 0,
+        networkName: '(to be determined)',
+        web3js: false,
+        config: {},
+        input: '',
+      };
     },
-    watch: {
-      address: energyStoreState.handleNewAddress,
-      contract: energyStoreState.handleNewContract
+    mounted() {
+      this.networkId = process.env.VUE_APP_NETWORK;
+      this.config = config[this.networkId];
+      this.networkName = this.config.name;
+      this.web3js = new Web3(this.config.rpc);
+      this.web3js.extend({
+        property: 'eth',
+        methods: [new this.web3js.extend.Method({
+          name: 'getQuorumPayload',
+          call: 'eth_getQuorumPayload',
+          params: 1,
+        })]
+      });
+      this.web3js.utils.hexToNumber = v => {
+        if (!v) return v;
+        try {
+          return numberToBN(v).toNumber();
+        } catch (e) {
+          return numberToBN(v).toString();
+        }
+      };
     },
-    mounted: function () {
-      this.txhash = window.location.search.replace('?tx/', '');
-    }
+    methods: {
+      search: function search() {
+        switch (this.input.length) {
+        case 66:
+          this.$router.push(`/tx/${this.input}`);
+          break;
+        case 42:
+          this.$router.push(`/address/${this.input}`);
+          break;
+        }
+      }
+    },
   };
-
-  $(document).ready(function () {
-    $(".btn-pref .btn").click(function () {
-      $(".btn-pref .btn").removeClass("btn-primary").addClass("btn-default");
-      // $(".tab").addClass("active"); // instead of this do the below
-      $(this).removeClass("btn-default").addClass("btn-primary");
-    });
-  });
 </script>
 
 <style>
@@ -147,7 +125,13 @@
   }
 
   nav.navbar > .container-fluid {
-    min-height: 100px;
+    height: 100px;
+  }
+
+  nav.navbar form {
+    height: 100%;
+    display: flex;
+    align-items: center;
   }
 
   nav.navbar {
@@ -156,7 +140,7 @@
   }
 
   div.title-container {
-    margin-top: 30%;
+    margin-top: 40px;
     color: white;
   }
 
@@ -187,7 +171,7 @@
     background: white;
 
     margin-left: -4000px;
-    margin-top: 35%;
+    margin-top: 200px;
   }
 
   img.logo2 {
@@ -201,9 +185,12 @@
     margin-left: 20px;
   }
 
-  img.headerimage {
-    width: 100%;
-    margin-top: 20%;
+  div.headerimage {
+    background-image: url('https://www.lition.io/wp-content/uploads/2018/03/180327-den-stage-illusration@3x.png');
+    background-position: top right;
+    background-repeat: no-repeat;
+    background-size: 200px;
+    margin-top: 130px;
   }
 
   .section-title {
@@ -215,6 +202,38 @@
     margin-top: 20px;
   }
 
+  thead th {
+    text-align: center;
+  }
+
+  .section-title {
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+
+  .word-break {
+    word-break: break-all;
+  }
+
+  .margin-bottom-xs {
+    margin-bottom: .25em;
+  }
+
+  .margin-bottom-sm {
+    margin-bottom: .5em;
+  }
+
+  .margin-bottom-md {
+    margin-bottom: 1em;
+  }
+
+  .margin-bottom-lg {
+    margin-bottom: 1.5em;
+  }
+
+  .margin-bottom-xl {
+    margin-bottom: 3em;
+  }
 
   @media only screen and (max-width: 992px) {
 
@@ -234,6 +253,10 @@
   @media only screen and (max-width: 770px) {
     img.logo2 {
       visibility: hidden;
+    }
+
+    nav.navbar > .container-fluid {
+      height: 150px;
     }
   }
 
