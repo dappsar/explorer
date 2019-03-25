@@ -60,29 +60,50 @@
         </div>
       </div>
       <div>
-        <div v-for="(decodedEvent, i) in decodedEvents" :key="i" class="table-container table-responsive">
-          <table id="decoded-event" class="table table-striped">
-            <tbody>
-            <tr v-for="(value, key) in decodedEvent" :key="key">
-              <td>
-                {{ key }}
-              </td>
-              <td class="word-break">
+        <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
+                v-on:click="nextBlocks()">
+          &#60;
+        </button>
+        {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
+        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)" v-on:click="prevBlocks()">
+          &#62;
+        </button>
+
+        <div v-if="decodedEvents && decodedEvents.length > 0">
+          <div v-for="(decodedEvent, i) in decodedEvents" :key="i" class="table-container table-responsive">
+            <table id="decoded-event" class="table table-striped">
+              <tbody>
+              <tr v-for="(value, key) in decodedEvent" :key="key">
+                <td>
+                  {{ key }}
+                </td>
+                <td class="word-break">
                 <span v-if="key==='blockHash'">
                   <router-link :to="`/block/${value}`">{{ value }}</router-link>
                 </span>
-                <span v-else-if="key==='transactionHash'">
+                  <span v-else-if="key==='transactionHash'">
                   <router-link :to="`/tx/${value}`">{{ value }}</router-link>
                 </span>
-                <span v-else-if="key==='returnValues'">
+                  <span v-else-if="key==='returnValues'">
                   {{ value | cleanDecodedObject }}
                 </span>
-                <span v-else>{{ value }}</span>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+                  <span v-else>{{ value }}</span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+        <div v-else>no events</div>
+
+        <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
+                v-on:click="nextBlocks()">
+          &#60;
+        </button>
+        {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
+        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)" v-on:click="prevBlocks()">
+          &#62;
+        </button>
       </div>
     </div>
   </div>
@@ -101,6 +122,10 @@
         contract: null,
         decodedEvents: null,
         abi: null,
+        lastNetworkBlockNumber: null,
+        lastBlockNumber: null,
+        blocksPerPage: 10,
+        autoUpdate: true,
       }
     },
     beforeRouteEnter(to, from, next) {
@@ -131,19 +156,40 @@
       getAbi: function getAbi() {
         this.loadAbi(this.$route.params.id);
       },
-      getEvents: function getEvents() {
+      getEvents: async function getEvents() {
+        this.lastNetworkBlockNumber = await this.$parent.web3js.eth.getBlockNumber();
+        if (this.autoUpdate) {
+          if (this.lastBlockNumber === this.lastNetworkBlockNumber) return;
+          this.lastBlockNumber = this.lastNetworkBlockNumber;
+        } else {
+          if (this.lastBlockNumber >= this.lastNetworkBlockNumber) this.lastBlockNumber = this.lastNetworkBlockNumber;
+          if (this.lastBlockNumber < (this.blocksPerPage - 1)) this.lastBlockNumber = this.blocksPerPage - 1;
+        }
         this.contract = new this.$parent.web3js.eth.Contract(this.abi, this.$route.params.id);
-        this.contract.getPastEvents('allEvents', { fromBlock: 0 })
+        this.contract.getPastEvents('allEvents', {
+          fromBlock: this.lastBlockNumber - this.blocksPerPage,
+          toBlock: this.lastBlockNumber,
+        })
           .then(events => this.decodedEvents = events);
       },
       call: function (item) {
         const values = item.inputs.map(input => input.value);
-        this.contract.methods[item.name](...values).call()
+        this.contract.methods[item.name](...values).call({}, 'latest') // todo: select block
           .then(result => {
             result = this.$options.filters.cleanDecodedObject(result);
             item.result = result;
           });
-      }
+      },
+      prevBlocks: function prevBlocks() {
+        this.autoUpdate = false;
+        this.lastBlockNumber = this.lastBlockNumber - this.blocksPerPage;
+        this.getEvents();
+      },
+      nextBlocks: function nextBlocks() {
+        this.autoUpdate = false;
+        this.lastBlockNumber = this.lastBlockNumber + this.blocksPerPage;
+        this.getEvents();
+      },
     }
   }
 </script>
