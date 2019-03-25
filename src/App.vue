@@ -9,7 +9,7 @@
           </router-link>
         </div>
         <form class="navbar-right" v-on:submit.prevent="search()">
-          <input type="text" class="form-control" v-model="input" placeholder="transaction, address">
+          <input type="text" class="form-control" v-model="input" placeholder="block, transaction, address">
           &nbsp;
           <button type="submit" class="btn btn-default">go</button>
         </form>
@@ -98,10 +98,23 @@
       search: function search() {
         switch (this.input.length) {
         case 66:
-          this.$router.push(`/tx/${this.input}`);
+          this.web3js.eth.getBlock(this.input).then(block => {
+            if (block) {
+              this.$router.push(`/block/${this.input}`);
+            } else {
+              this.$router.push(`/tx/${this.input}`);
+            }
+          });
           break;
         case 42:
           this.$router.push(`/address/${this.input}`);
+          break;
+        default:
+          this.web3js.eth.getBlock(this.input).then(block => {
+            if (block) {
+              this.$router.push(`/block/${block.hash}`);
+            }
+          });
           break;
         }
       }
