@@ -17,6 +17,7 @@
         <h3>Read Contract</h3>
       </div>
       <div class="form-inline">
+        Block: <input class="form-control" v-model="readBlock"/>
         <div class="margin-bottom-lg" v-for="(item, i) in abi.filter(item => item.constant)" :key="i">
           <div>{{ i + 1 }}. {{ item.name }}</div>
           <div class="margin-bottom-sm" v-for="(input, k) in item.inputs" :key="k">
@@ -122,6 +123,7 @@
         contract: null,
         decodedEvents: null,
         abi: null,
+        readBlock: 'latest',
         lastNetworkBlockNumber: null,
         lastBlockNumber: null,
         blocksPerPage: 10,
@@ -174,10 +176,13 @@
       },
       call: function (item) {
         const values = item.inputs.map(input => input.value);
-        this.contract.methods[item.name](...values).call({}, 'latest') // todo: select block
+        this.contract.methods[item.name](...values).call({}, this.readBlock)
           .then(result => {
             result = this.$options.filters.cleanDecodedObject(result);
             item.result = result;
+          })
+          .catch(() => {
+            item.result = {};
           });
       },
       prevBlocks: function prevBlocks() {
