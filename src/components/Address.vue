@@ -143,6 +143,10 @@
       abi: function () {
         this.getEvents();
       },
+      '$parent.selectedProvider': function () {
+        if (!this.contract) return;
+        this.contract.setProvider(this.$parent.selectedProvider);
+      },
     },
     methods: {
       getTransactionCount: function getTransactionCount() {

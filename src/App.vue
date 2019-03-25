@@ -8,6 +8,14 @@
             <img class="logo" src="https://www.lition.io/wp-content/uploads/2018/03/lition-logo-secondary-white@3x.png">
           </router-link>
         </div>
+
+        <div class="navbar-right">
+          Provider&nbsp;
+          <select class="form-control" v-model="selectedProvider" v-on:change="changeProvider()">
+            <option v-for="i in availableNodes" v-bind:value="i.value" v-bind:key="i.value">{{ i.text }}</option>
+          </select>
+        </div>
+
         <form class="navbar-right" v-on:submit.prevent="search()">
           <input type="text" class="form-control" v-model="input" placeholder="block, transaction, address">
           &nbsp;
@@ -70,6 +78,8 @@
         web3js: false,
         config: {},
         input: '',
+        selectedProvider: null,
+        availableNodes: [],
       };
     },
     mounted() {
@@ -93,6 +103,7 @@
           return numberToBN(v).toString();
         }
       };
+      this.getNodes();
     },
     methods: {
       search: function search() {
@@ -117,7 +128,23 @@
           });
           break;
         }
-      }
+      },
+      getNodes: function () {
+        this.selectedProvider = this.config.rpc;
+        const url = new URL(this.web3js._provider.host);
+        fetch(`${this.config.manager}/getNodeList`)
+          .then(r => r.json())
+          .then(r => {
+            this.availableNodes = r.map(i => {
+              url.hostname = i.ip;
+              return { text: i.nodeName, value: url.toString() };
+            });
+          });
+      },
+      changeProvider: function () {
+        const provider = new Web3.providers.HttpProvider(this.selectedProvider);
+        this.web3js.setProvider(provider);
+      },
     },
   };
 </script>
@@ -128,7 +155,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
-    color: #2c3e50;
+    color: #fff;
   }
 
 
@@ -141,10 +168,11 @@
     height: 100px;
   }
 
-  nav.navbar form {
+  nav.navbar .navbar-right {
     height: 100%;
     display: flex;
     align-items: center;
+    margin-left: 3px;
   }
 
   nav.navbar {
