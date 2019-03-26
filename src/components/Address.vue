@@ -3,131 +3,141 @@
     <div class="section-title">
       <h3>Address: {{ $route.params.id }}</h3>
     </div>
-    <h3>Transactions: {{ transactionCount }}</h3>
 
-    <div v-if="abi">
-      <div class="section-title">
-        <h3>Read Contract</h3>
-      </div>
-      <div class="form-inline">
-        Block: <input class="form-control" v-model="readBlock"/>
-        <div class="margin-bottom-lg" v-for="(item, i) in abi.filter(item => item.constant)" :key="i">
-          <div>{{ i + 1 }}. {{ item.name }}</div>
-          <div class="margin-bottom-sm" v-for="(input, k) in item.inputs" :key="k">
-            <input class="form-control" v-model="input.value" :placeholder="input.name"/>
-            {{ input.type }}
-          </div>
-          <div class="margin-bottom-sm">
-            <button class="btn btn-default" v-on:click="call(item)">query</button>
-          </div>
+    <div>
+      <ul class="nav nav-tabs margin-bottom-xl" role="tablist">
+        <li role="presentation" class="active">
+          <a href="#info" aria-controls="info" role="tab" data-toggle="tab">Info</a>
+        </li>
+        <li role="presentation" v-if="abi">
+          <a href="#events" aria-controls="events" role="tab" data-toggle="tab">Events</a>
+        </li>
+        <li role="presentation" v-if="abi">
+          <a href="#read" aria-controls="read" role="tab" data-toggle="tab">Read</a>
+        </li>
+        <li role="presentation" v-if="abi">
+          <a href="#write" aria-controls="write" role="tab" data-toggle="tab">Write</a>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="info">
+          <h3>Transactions: {{ transactionCount }}</h3>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="events" v-if="abi">
           <div>
-            <table id="decoded-result" class="table table-striped">
-              <tbody>
-              <tr v-for="(value, key) in item.result" :key="key">
-                <td>
-                  {{ key }}
-                </td>
-                <td class="word-break">
-                  <span v-if="key==='timestamp'">{{ value | datetime}}</span>
-                  <span v-else>{{ value }}</span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+            <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
+                    v-on:click="nextBlocks()">&#60;
+            </button>
+            {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
+            <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)"
+                    v-on:click="prevBlocks()">&#62;
+            </button>
+
+            <div v-if="decodedEvents && decodedEvents.length > 0">
+              <div v-for="(decodedEvent, i) in decodedEvents" :key="i" class="table-container table-responsive">
+                <table id="decoded-event" class="table table-striped">
+                  <tbody>
+                  <tr v-for="(value, key) in decodedEvent" :key="key">
+                    <td>
+                      {{ key }}
+                    </td>
+                    <td class="word-break">
+                      <span v-if="key==='blockHash'">
+                        <router-link :to="`/block/${value}`">{{ value }}</router-link>
+                      </span>
+                      <span v-else-if="key==='transactionHash'">
+                        <router-link :to="`/tx/${value}`">{{ value }}</router-link>
+                      </span>
+                      <span v-else-if="key==='returnValues'">
+                        {{ value | cleanDecodedObject }}
+                      </span>
+                      <span v-else>{{ value }}</span>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div v-else>no events</div>
+
+            <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
+                    v-on:click="nextBlocks()">&#60;
+            </button>
+            {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
+            <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)"
+                    v-on:click="prevBlocks()">&#62;
+            </button>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div v-if="abi">
-      <div class="section-title">
-        <h3>Write Contract</h3>
-      </div>
-      <div class="form-inline">
-        Private for:
-        <select class="form-control" multiple v-model="privateFor">
-          <option v-for="i in $parent.availableNodes" v-bind:value="i.publicKey" v-bind:key="i.publicKey">
-            {{ i.nodeName }}
-          </option>
-        </select>
-        <div class="margin-bottom-lg" v-for="(item, i) in abi.filter(item => item.constant === false)" :key="i">
-          <div>{{ i + 1 }}. {{ item.name }}</div>
-          <div class="margin-bottom-sm" v-for="(input, k) in item.inputs" :key="k">
-            <input class="form-control" v-model="input.value" :placeholder="input.name"/>
-            {{ input.type }}
-          </div>
-          <div class="margin-bottom-sm">
-            <button class="btn btn-default" v-on:click="send(item)">write</button>
-          </div>
-          <div>
-            <table id="result" class="table table-striped">
-              <tbody>
-              <tr v-for="(value, key) in item.result" :key="key">
-                <td>
-                  {{ key }}
-                </td>
-                <td class="word-break">
-                  <span v-if="key==='timestamp'">{{ value | datetime}}</span>
-                  <span v-else>{{ value }}</span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+        <div role="tabpanel" class="tab-pane" id="read" v-if="abi">
+          <div class="form-inline">
+            Block: <input class="form-control" v-model="readBlock"/>
+            <div class="margin-bottom-lg" v-for="(item, i) in abi.filter(item => item.constant)" :key="i">
+              <div>{{ i + 1 }}. {{ item.name }}</div>
+              <div class="margin-bottom-sm" v-for="(input, k) in item.inputs" :key="k">
+                <input class="form-control" v-model="input.value" :placeholder="input.name"/>
+                {{ input.type }}
+              </div>
+              <div class="margin-bottom-sm">
+                <button class="btn btn-default" v-on:click="call(item)">query</button>
+              </div>
+              <div>
+                <table id="decoded-result" class="table table-striped">
+                  <tbody>
+                  <tr v-for="(value, key) in item.result" :key="key">
+                    <td>
+                      {{ key }}
+                    </td>
+                    <td class="word-break">
+                      <span v-if="key==='timestamp'">{{ value | datetime}}</span>
+                      <span v-else>{{ value }}</span>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div v-if="abi">
-      <div class="section-title">
-        <h3>Decoded Events</h3>
-        <div id="decoded-events-standin" v-if="!decodedEvents">
-          <p>(Not available...)</p>
-        </div>
-      </div>
-      <div>
-        <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
-                v-on:click="nextBlocks()">&#60;
-        </button>
-        {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
-        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)"
-                v-on:click="prevBlocks()">&#62;
-        </button>
-
-        <div v-if="decodedEvents && decodedEvents.length > 0">
-          <div v-for="(decodedEvent, i) in decodedEvents" :key="i" class="table-container table-responsive">
-            <table id="decoded-event" class="table table-striped">
-              <tbody>
-              <tr v-for="(value, key) in decodedEvent" :key="key">
-                <td>
-                  {{ key }}
-                </td>
-                <td class="word-break">
-                <span v-if="key==='blockHash'">
-                  <router-link :to="`/block/${value}`">{{ value }}</router-link>
-                </span>
-                  <span v-else-if="key==='transactionHash'">
-                  <router-link :to="`/tx/${value}`">{{ value }}</router-link>
-                </span>
-                  <span v-else-if="key==='returnValues'">
-                  {{ value | cleanDecodedObject }}
-                </span>
-                  <span v-else>{{ value }}</span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+        <div role="tabpanel" class="tab-pane" id="write" v-if="abi">
+          <div class="form-inline">
+            Private for:
+            <select class="form-control" multiple v-model="privateFor">
+              <option v-for="i in $parent.availableNodes" v-bind:value="i.publicKey" v-bind:key="i.publicKey">
+                {{ i.nodeName }}
+              </option>
+            </select>
+            <div class="margin-bottom-lg" v-for="(item, i) in abi.filter(item => item.constant === false)" :key="i">
+              <div>{{ i + 1 }}. {{ item.name }}</div>
+              <div class="margin-bottom-sm" v-for="(input, k) in item.inputs" :key="k">
+                <input class="form-control" v-model="input.value" :placeholder="input.name"/>
+                {{ input.type }}
+              </div>
+              <div class="margin-bottom-sm">
+                <button class="btn btn-default" v-on:click="send(item)">write</button>
+              </div>
+              <div>
+                <table id="result" class="table table-striped">
+                  <tbody>
+                  <tr v-for="(value, key) in item.result" :key="key">
+                    <td>
+                      {{ key }}
+                    </td>
+                    <td class="word-break">
+                      <span v-if="key==='timestamp'">{{ value | datetime}}</span>
+                      <span v-else>{{ value }}</span>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-        <div v-else>no events</div>
-
-        <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
-                v-on:click="nextBlocks()">&#60;
-        </button>
-        {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
-        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)"
-                v-on:click="prevBlocks()">&#62;
-        </button>
       </div>
     </div>
   </div>
