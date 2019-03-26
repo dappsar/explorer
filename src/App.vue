@@ -2,24 +2,27 @@
   <div id="app">
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <router-link class="navbar-brand" to="/">
-            <img class="logo" src="https://www.lition.io/wp-content/uploads/2018/03/lition-logo-secondary-white@3x.png">
-          </router-link>
-        </div>
+      <div class="container-fluid top-header">
+        <router-link to="/" class="logo">
+          <img src="https://www.lition.io/wp-content/uploads/2018/03/lition-logo-secondary-white@3x.png">
+        </router-link>
 
-        <div class="navbar-right">
-          Provider&nbsp;
-          <select class="form-control" v-model="selectedProvider" v-on:change="changeProvider()">
+        <div class="form-inline">
+          <label for="selected-provider">Provider</label>
+          <select class="form-control" id="selected-provider" v-model="selectedProvider" v-on:change="changeProvider()">
             <option v-for="i in availableNodes" v-bind:value="i.value" v-bind:key="i.value">{{ i.text }}</option>
           </select>
         </div>
 
-        <form class="navbar-right" v-on:submit.prevent="search()">
-          <input type="text" class="form-control" v-model="input" placeholder="block, transaction, address">
-          &nbsp;
-          <button type="submit" class="btn btn-default">go</button>
+        <form class="form-inline" v-on:submit.prevent="search()">
+          <label for="input">Search</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="input" v-model="input"
+                   placeholder="block, transaction, address">
+            <span class="input-group-btn">
+              <button type="submit" class="btn btn-default">go</button>
+            </span>
+          </div>
         </form>
       </div>
 
@@ -158,26 +161,33 @@
     color: #fff;
   }
 
+  nav.navbar {
+    min-height: 100px;
+    background-color: rgba(5, 26, 46, 0.9);
+  }
 
   nav.navbar > .alert {
     display: none;
     margin-bottom: 0;
   }
 
-  nav.navbar > .container-fluid {
-    height: 100px;
-  }
-
-  nav.navbar .navbar-right {
-    height: 100%;
+  div.top-header {
+    min-height: 100px;
     display: flex;
     align-items: center;
-    margin-left: 3px;
+    flex-wrap: wrap;
   }
 
-  nav.navbar {
-    min-height: 100px;
-    background-color: rgba(5, 26, 46, 0.9);
+  .logo {
+    margin-right: auto;
+  }
+
+  .top-header .form-inline {
+    margin-left: 10px;
+  }
+
+  .top-header label {
+    margin-right: 3px;
   }
 
   div.title-container {
@@ -215,17 +225,6 @@
     margin-top: 200px;
   }
 
-  img.logo2 {
-    width: 200px;
-    margin-right: 70px;
-    margin-top: -10px;
-  }
-
-  img.logo {
-    margin-top: 10px;
-    margin-left: 20px;
-  }
-
   div.headerimage {
     background-image: url('https://www.lition.io/wp-content/uploads/2018/03/180327-den-stage-illusration@3x.png');
     background-position: top right;
@@ -234,22 +233,12 @@
     margin-top: 130px;
   }
 
-  .section-title {
-    margin-top: 10px;
-    margin-bottom: 20px;
-  }
-
   div.table-container {
     margin-top: 20px;
   }
 
   thead th {
     text-align: center;
-  }
-
-  .section-title {
-    margin-top: 30px;
-    margin-bottom: 20px;
   }
 
   .word-break {
@@ -277,7 +266,6 @@
   }
 
   @media only screen and (max-width: 992px) {
-
     div.title-container {
       margin-top: 30px;
     }
@@ -292,13 +280,12 @@
   }
 
   @media only screen and (max-width: 770px) {
-    img.logo2 {
-      visibility: hidden;
+    .top-header .form-inline {
+      margin-left: 0;
     }
 
-    nav.navbar > .container-fluid {
-      height: 150px;
+    .top-header .form-inline label {
+      display: none;
     }
   }
-
 </style>

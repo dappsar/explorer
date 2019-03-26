@@ -1,9 +1,9 @@
 <template>
   <div id="addrss-container">
     <div class="section-title">
-      <h3>Address {{ $route.params.id }}</h3>
+      <h3>Address: {{ $route.params.id }}</h3>
     </div>
-    <div>Transactions: {{ transactionCount }}</div>
+    <h3>Transactions: {{ transactionCount }}</h3>
 
     <div v-if="!abi && isContract">
       <div class="section-title">
