@@ -5,13 +5,6 @@
     </div>
     <h3>Transactions: {{ transactionCount }}</h3>
 
-    <div v-if="!abi && isContract">
-      <div class="section-title">
-        <h3>Upload ABI (soon)</h3>
-      </div>
-      <div></div>
-    </div>
-
     <div v-if="abi">
       <div class="section-title">
         <h3>Read Contract</h3>
@@ -48,9 +41,41 @@
 
     <div v-if="abi">
       <div class="section-title">
-        <h3>Write Contract (soon)</h3>
+        <h3>Write Contract</h3>
       </div>
-      <div></div>
+      <div class="form-inline">
+        Private for:
+        <select class="form-control" multiple v-model="privateFor">
+          <option v-for="i in $parent.availableNodes" v-bind:value="i.publicKey" v-bind:key="i.publicKey">
+            {{ i.nodeName }}
+          </option>
+        </select>
+        <div class="margin-bottom-lg" v-for="(item, i) in abi.filter(item => item.constant === false)" :key="i">
+          <div>{{ i + 1 }}. {{ item.name }}</div>
+          <div class="margin-bottom-sm" v-for="(input, k) in item.inputs" :key="k">
+            <input class="form-control" v-model="input.value" :placeholder="input.name"/>
+            {{ input.type }}
+          </div>
+          <div class="margin-bottom-sm">
+            <button class="btn btn-default" v-on:click="send(item)">write</button>
+          </div>
+          <div>
+            <table id="result" class="table table-striped">
+              <tbody>
+              <tr v-for="(value, key) in item.result" :key="key">
+                <td>
+                  {{ key }}
+                </td>
+                <td class="word-break">
+                  <span v-if="key==='timestamp'">{{ value | datetime}}</span>
+                  <span v-else>{{ value }}</span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="abi">
@@ -62,12 +87,11 @@
       </div>
       <div>
         <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
-                v-on:click="nextBlocks()">
-          &#60;
+                v-on:click="nextBlocks()">&#60;
         </button>
         {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
-        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)" v-on:click="prevBlocks()">
-          &#62;
+        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)"
+                v-on:click="prevBlocks()">&#62;
         </button>
 
         <div v-if="decodedEvents && decodedEvents.length > 0">
@@ -98,12 +122,11 @@
         <div v-else>no events</div>
 
         <button class="btn btn-default" :disabled="lastBlockNumber === lastNetworkBlockNumber"
-                v-on:click="nextBlocks()">
-          &#60;
+                v-on:click="nextBlocks()">&#60;
         </button>
         {{ lastBlockNumber - blocksPerPage + 1 }} - {{ lastBlockNumber + 1 }}
-        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)" v-on:click="prevBlocks()">
-          &#62;
+        <button class="btn btn-default" :disabled="lastBlockNumber === (blocksPerPage - 1)"
+                v-on:click="prevBlocks()">&#62;
         </button>
       </div>
     </div>
@@ -128,6 +151,7 @@
         lastBlockNumber: null,
         blocksPerPage: 10,
         autoUpdate: true,
+        privateFor: [],
       }
     },
     beforeRouteEnter(to, from, next) {
@@ -141,11 +165,16 @@
         this.getAbi();
       },
       abi: function () {
+        // todo: warning about missing ABI in contract metadata
         this.getEvents();
       },
-      '$parent.selectedProvider': function () {
+      '$parent.selectedProvider': async function () {
         if (!this.contract) return;
+
         this.contract.setProvider(this.$parent.selectedProvider);
+
+        const accounts = await this.$parent.web3js.eth.getAccounts();
+        this.contract.options.from = accounts[0];
       },
     },
     methods: {
@@ -171,7 +200,8 @@
           if (this.lastBlockNumber >= this.lastNetworkBlockNumber) this.lastBlockNumber = this.lastNetworkBlockNumber;
           if (this.lastBlockNumber < (this.blocksPerPage - 1)) this.lastBlockNumber = this.blocksPerPage - 1;
         }
-        this.contract = new this.$parent.web3js.eth.Contract(this.abi, this.$route.params.id);
+        const accounts = await this.$parent.web3js.eth.getAccounts();
+        this.contract = new this.$parent.web3js.eth.Contract(this.abi, this.$route.params.id, { from: accounts[0] });
         this.contract.getPastEvents('allEvents', {
           fromBlock: this.lastBlockNumber - this.blocksPerPage,
           toBlock: this.lastBlockNumber,
@@ -187,6 +217,21 @@
           })
           .catch(() => {
             item.result = {};
+          });
+      },
+      send: async function (item) {
+        await this.$parent.web3js.eth.personal.unlockAccount(this.contract.options.from);
+        const values = item.inputs.map(input => input.value);
+        this.contract.methods[item.name](...values).send({
+          privateFor: this.privateFor.filter(i => i !== this.$parent.selectedProvider.publicKey),
+        })
+          .then(result => {
+            item.result = result;
+          })
+          .catch(e => {
+            console.error(e);
+            $('.alert-info > .message').text(e.message);
+            $('.alert-info').show();
           });
       },
       prevBlocks: function prevBlocks() {

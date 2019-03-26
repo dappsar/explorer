@@ -10,7 +10,7 @@
         <div class="form-inline">
           <label for="selected-provider">Provider</label>
           <select class="form-control" id="selected-provider" v-model="selectedProvider" v-on:change="changeProvider()">
-            <option v-for="i in availableNodes" v-bind:value="i.value" v-bind:key="i.value">{{ i.text }}</option>
+            <option v-for="i in availableNodes" v-bind:value="i" v-bind:key="i.rpc">{{ i.nodeName }}</option>
           </select>
         </div>
 
@@ -132,20 +132,27 @@
           break;
         }
       },
-      getNodes: function () {
-        this.selectedProvider = this.config.rpc;
-        const url = new URL(this.web3js._provider.host);
-        fetch(`${this.config.manager}/getNodeList`)
+      getNodes: async function () {
+        const rpc = new URL(this.config.rpc);
+        const manager = new URL(this.config.manager);
+        await fetch(`${this.config.manager}/getNodeList`)
           .then(r => r.json())
           .then(r => {
             this.availableNodes = r.map(i => {
-              url.hostname = i.ip;
-              return { text: i.nodeName, value: url.toString() };
+              rpc.hostname = i.ip;
+              manager.hostname = i.ip;
+              return {
+                nodeName: i.nodeName,
+                publicKey: i.publicKey,
+                rpc: rpc.toString(),
+                manager: manager.toString(),
+              };
             });
           });
+        this.selectedProvider = this.availableNodes.find(i => i.rpc === this.config.rpc);
       },
       changeProvider: function () {
-        const provider = new Web3.providers.HttpProvider(this.selectedProvider);
+        const provider = new Web3.providers.HttpProvider(this.selectedProvider.rpc);
         this.web3js.setProvider(provider);
       },
     },
