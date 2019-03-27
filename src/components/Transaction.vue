@@ -98,7 +98,7 @@
       </div>
     </div>
 
-    <button v-if="!deleted" v-on:click="deleteData()" class="btn btn-success btn-lg">Delete data</button>
+    <button v-if="isPrivate && !deleted" v-on:click="deleteData()" class="btn btn-success btn-lg">Delete data</button>
   </div>
 </template>
 
@@ -110,6 +110,7 @@
     mixins: [loadAbi],
     data() {
       return {
+        isPrivate: false,
         deleted: false,
         transaction: null,
         receipt: null,
@@ -135,12 +136,13 @@
     methods: {
       getTransaction: function getTransaction(id) {
         this.$parent.web3js.eth.getTransaction(id).then(async transaction => {
-          if(!transaction) {
+          if (!transaction) {
             $('.alert-danger > .message').text('Transaction not found');
             $('.alert-danger').show();
             return;
           }
-          transaction.input = await this.$parent.web3js.eth.getQuorumPayload(transaction.input);
+          if (transaction.v === '0x25' || transaction.v === '0x26') this.isPrivate = true;
+          if (this.isPrivate) transaction.input = await this.$parent.web3js.eth.getQuorumPayload(transaction.input);
           this.transaction = transaction;
           if (this.transaction.input === '0x') {
             this.deleted = true;
